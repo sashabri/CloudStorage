@@ -53,7 +53,6 @@ public class AuthenticationService {
 
     public void logout(String token) {
         if (token == null || token.isEmpty()) return;
-        // todo BEARER_PREFIX хочет в отдельный enum
         var tokenForLogout = token;
         if (StringUtils.startsWith(token, BEARER_PREFIX)) {
             tokenForLogout = token.substring((BEARER_PREFIX.length()));

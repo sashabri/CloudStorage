@@ -80,7 +80,6 @@ public class FileController {
     public Collection<ListItem> getListFiles(
             @RequestParam Integer limit
     ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
-        // todo проверка limit
         var userName = SecurityContextHolder.getContext().getAuthentication().getName();
         return fileService.getFileListByUser(userName, limit);
     }

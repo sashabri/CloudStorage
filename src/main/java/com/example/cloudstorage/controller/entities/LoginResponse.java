@@ -8,4 +8,7 @@ public class LoginResponse {
     public LoginResponse(String authToken) {
         this.authToken = authToken;
     }
+    public String getAuthToken() {
+        return authToken;
+    }
 }
