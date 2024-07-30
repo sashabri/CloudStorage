@@ -81,7 +81,9 @@ public class FileController {
             @RequestParam Integer limit
     ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
         var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return fileService.getFileListByUser(userName, limit);
+        return fileService.getFileListByUser(userName, limit).stream()
+                .limit(limit)
+                .map(data -> new ListItem(data.getFileName(), data.getData().length)).toList();
     }
 
     private String generateFileName() {

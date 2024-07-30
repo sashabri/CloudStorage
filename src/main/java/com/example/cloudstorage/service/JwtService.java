@@ -3,6 +3,8 @@ package com.example.cloudstorage.service;
 import com.example.cloudstorage.model.UserInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
+    private static final Logger log = LoggerFactory.getLogger(DefaultFileService.class);
+
 
     /**
      * Извлечение имени пользователя из токена
@@ -31,6 +35,7 @@ public class JwtService {
      * @return токен
      */
     public String generateToken(UserDetails userDetails) {
+        log.info("generateToken for " + userDetails.getUsername());
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof UserInfo customUserDetails) {
             claims.put("id", customUserDetails.getId());
