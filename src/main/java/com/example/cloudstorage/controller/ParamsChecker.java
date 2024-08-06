@@ -23,9 +23,9 @@ public class ParamsChecker {
         }
     }
 
-    public static void checkShouldBeNotEmptyUser(UserInfo user) {
+    public static void checkShouldBeNotEmptyUser(UserInfo user) throws InvalidDataException {
         if (user == null) {
-            throw new NullPointerException("User not found");
+            throw new InvalidDataException("User not found");
         }
     }
 }

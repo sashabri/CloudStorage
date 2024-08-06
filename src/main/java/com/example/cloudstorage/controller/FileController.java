@@ -7,26 +7,30 @@ import com.example.cloudstorage.model.UserFileInfo;
 import com.example.cloudstorage.exception.InternalServerErrorException;
 import com.example.cloudstorage.exception.InvalidDataException;
 import com.example.cloudstorage.exception.UnauthorisedException;
+import com.example.cloudstorage.model.UserInfo;
+import com.example.cloudstorage.repository.UserInfoRepository;
 import com.example.cloudstorage.service.FileService;
+import com.example.cloudstorage.service.UserInfoService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import static com.example.cloudstorage.controller.ParamsChecker.checkShouldBeNotEmptyStr;
-import static com.example.cloudstorage.controller.ParamsChecker.checkShouldBeNotEmptyLoadFileBody;
-
 import java.io.IOException;
 import java.util.Collection;
+
+import static com.example.cloudstorage.controller.ParamsChecker.*;
 
 @RestController
 @RequestMapping("/")
 public class FileController {
     private final FileService fileService;
+    private final UserInfoService userInfoService;
 
-    public FileController(FileService fileService) {
+    public FileController(FileService fileService, UserInfoRepository userInfoRepository, UserInfoService userInfoService) {
         this.fileService = fileService;
+        this.userInfoService = userInfoService;
     }
 
     @PostMapping(path = "file", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
@@ -39,8 +43,11 @@ public class FileController {
         }
 
         checkShouldBeNotEmptyLoadFileBody(loadFileBody);
-        var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        fileService.uploadFile(loadFileBody, fileName, userName);
+
+        String userName = getUserName();
+        UserInfo user = userInfoService.getUserByName(userName);
+
+        fileService.uploadFile(loadFileBody, fileName, user);
     }
 
     @DeleteMapping("file")
@@ -48,8 +55,12 @@ public class FileController {
             @RequestParam(value = "filename") String fileName
     ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
         checkShouldBeNotEmptyStr(fileName);
-        var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        fileService.deleteFile(userName, fileName);
+
+        String userName = getUserName();
+        UserInfo user = userInfoService.getUserByName(userName);
+
+        fileService.deleteFile(user, fileName);
+
         return ResponseEntity.ok().body(null);
     }
 
@@ -58,8 +69,11 @@ public class FileController {
             @RequestParam(value = "filename") String fileName
     ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
         checkShouldBeNotEmptyStr(fileName);
-        var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserFileInfo data = fileService.getData(userName, fileName);
+
+        String userName = getUserName();
+        UserInfo user = userInfoService.getUserByName(userName);
+
+        UserFileInfo data = fileService.getData(user, fileName);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + data.getFileName() + "\"")
                 .body(data.getData());
@@ -71,8 +85,11 @@ public class FileController {
             @RequestBody EditFileNameBody body 
     ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
         checkShouldBeNotEmptyStr(body.getFileName());
-        var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        fileService.changeFileName(userName, fileName, body.getFileName());
+
+        String userName = getUserName();
+        UserInfo user = userInfoService.getUserByName(userName);
+
+        fileService.changeFileName(user, fileName, body.getFileName());
         return ResponseEntity.ok().body(null);
     }
 
@@ -80,8 +97,11 @@ public class FileController {
     public Collection<ListItem> getListFiles(
             @RequestParam Integer limit
     ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
-        var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        return fileService.getFileListByUser(userName, limit).stream()
+
+        String userName = getUserName();
+        UserInfo user = userInfoService.getUserByName(userName);
+
+        return user.getListFilesInfo().stream()
                 .limit(limit)
                 .map(data -> new ListItem(data.getFileName(), data.getData().length)).toList();
     }
@@ -89,4 +109,8 @@ public class FileController {
     private String generateFileName() {
         return "New File " + java.time.LocalDateTime.now();
     }
+    private String getUserName() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
 }
+
