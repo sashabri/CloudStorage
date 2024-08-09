@@ -43,6 +43,7 @@ public class DefaultFileService implements FileService {
         data.setUser(user);
 
         userFileInfoRepository.save(data);
+
     }
 
     @Override
@@ -52,6 +53,7 @@ public class DefaultFileService implements FileService {
         user.getListFilesInfo().forEach(data -> {
             if (data.getFileName().equals(fileName)) {
                 userFileInfoRepository.delete(data);
+                log.info("successful deleteFile: userName = " + user.getUsername() + ", fileName = " + fileName);
             }
         });
     }
@@ -64,6 +66,7 @@ public class DefaultFileService implements FileService {
             if (data.getFileName().equals(oldFileName)) {
                 data.setFileName(newFileName);
                 userFileInfoRepository.saveAndFlush(data);
+                log.info("successful changeFileName: userName = " + user.getUsername() + ", oldFileName = " + oldFileName + ", newFileName = " + newFileName);
             }
         });
     }
@@ -74,11 +77,15 @@ public class DefaultFileService implements FileService {
 
         for (UserFileInfo data : user.getListFilesInfo()) {
             if (data.getFileName().equals(fileName)) {
+                log.info("successful getData: userName = " + user.getUsername() + ", fileName = " + fileName);
                 return data;
             }
         }
         InvalidDataException invalidDataException = new InvalidDataException("Data not found");
-        log.error("getData: Input data fileName - " + fileName + ", not exist", invalidDataException);
+        log.error("при вызове getData: у пользователья user - "
+                + user.getUsername()
+                + " не наден файл с именем fileName - "
+                + fileName, invalidDataException);
         throw invalidDataException;
     }
 }

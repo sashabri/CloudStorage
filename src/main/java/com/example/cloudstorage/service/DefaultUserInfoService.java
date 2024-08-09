@@ -1,6 +1,7 @@
 package com.example.cloudstorage.service;
 
 import com.example.cloudstorage.exception.InvalidDataException;
+import com.example.cloudstorage.exception.UserIsNullException;
 import com.example.cloudstorage.model.UserInfo;
 import com.example.cloudstorage.repository.UserInfoRepository;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ public class DefaultUserInfoService implements UserInfoService {
     }
 
     @Override
-    public UserInfo getUserByName(String userName) throws InvalidDataException {
+    public UserInfo getUserByName(String userName) throws UserIsNullException {
         log.debug("getUserByName: userName = " + userName);
         UserInfo user = userInfoRepository.getByLogin(userName);
         checkShouldBeNotEmptyUser(user);

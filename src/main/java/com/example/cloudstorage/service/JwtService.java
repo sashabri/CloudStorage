@@ -17,7 +17,6 @@ import java.util.function.Function;
 public class JwtService {
     private static final Logger log = LoggerFactory.getLogger(DefaultFileService.class);
 
-
     /**
      * Извлечение имени пользователя из токена
      *

@@ -6,6 +6,7 @@ public class ListItem {
     @JsonProperty("filename")
     private String fileName;
     private Integer size;
+
     public ListItem(String fileName, Integer size) {
         this.fileName = fileName;
         this.size = size;

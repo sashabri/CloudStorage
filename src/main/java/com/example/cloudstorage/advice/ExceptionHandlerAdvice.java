@@ -1,9 +1,7 @@
 package com.example.cloudstorage.advice;
 
 import com.example.cloudstorage.controller.entities.ErrorResponse;
-import com.example.cloudstorage.exception.InternalServerErrorException;
-import com.example.cloudstorage.exception.InvalidDataException;
-import com.example.cloudstorage.exception.UnauthorisedException;
+import com.example.cloudstorage.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -47,6 +45,30 @@ public class ExceptionHandlerAdvice {
                         HttpStatus.UNAUTHORIZED.value()
                 ),
                 HttpStatus.UNAUTHORIZED
+        );
+    }
+
+    @ExceptionHandler(InvalidBodyException.class)
+    public ResponseEntity<ErrorResponse> invalidBodyHandler(InvalidBodyException e) {
+        return new ResponseEntity<>(
+                new ErrorResponse(e.toString(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(InputParamIsNullException.class)
+    public ResponseEntity<ErrorResponse> inputParamIsNullHandler(InputParamIsNullException e) {
+        return new ResponseEntity<>(
+                new ErrorResponse(e.toString(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(UserIsNullException.class)
+    public ResponseEntity<ErrorResponse> userIsNullHandler(UserIsNullException e) {
+        return new ResponseEntity<>(
+                new ErrorResponse(e.toString(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST
         );
     }
 }

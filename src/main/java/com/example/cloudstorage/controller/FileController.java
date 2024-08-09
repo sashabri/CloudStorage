@@ -3,14 +3,16 @@ package com.example.cloudstorage.controller;
 import com.example.cloudstorage.controller.entities.EditFileNameBody;
 import com.example.cloudstorage.controller.entities.ListItem;
 import com.example.cloudstorage.controller.entities.LoadFileBody;
+import com.example.cloudstorage.exception.InputParamIsNullException;
+import com.example.cloudstorage.exception.InvalidLoadFileBodyException;
+import com.example.cloudstorage.exception.UserIsNullException;
 import com.example.cloudstorage.model.UserFileInfo;
-import com.example.cloudstorage.exception.InternalServerErrorException;
 import com.example.cloudstorage.exception.InvalidDataException;
-import com.example.cloudstorage.exception.UnauthorisedException;
 import com.example.cloudstorage.model.UserInfo;
-import com.example.cloudstorage.repository.UserInfoRepository;
 import com.example.cloudstorage.service.FileService;
 import com.example.cloudstorage.service.UserInfoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +29,9 @@ import static com.example.cloudstorage.controller.ParamsChecker.*;
 public class FileController {
     private final FileService fileService;
     private final UserInfoService userInfoService;
+    private static final Logger log = LoggerFactory.getLogger(FileController.class);
 
-    public FileController(FileService fileService, UserInfoRepository userInfoRepository, UserInfoService userInfoService) {
+    public FileController(FileService fileService, UserInfoService userInfoService) {
         this.fileService = fileService;
         this.userInfoService = userInfoService;
     }
@@ -37,11 +40,14 @@ public class FileController {
     public void uploadFileToServer(
             @RequestParam(value = "filename") String fileName,
             @ModelAttribute LoadFileBody loadFileBody
-            ) throws InvalidDataException, UnauthorisedException, IOException, IllegalAccessException {
+            ) throws InvalidDataException, IOException, IllegalAccessException, InvalidLoadFileBodyException, UserIsNullException {
         if (fileName == null || fileName.isEmpty()) {
-            fileName = generateFileName();
+            String customFileName = generateFileName();
+            fileName = customFileName;
+            log.info("fileName not specified by user, fileName applied - " + customFileName);
         }
 
+        log.debug("checkShouldBeNotEmptyLoadFileBody: input param - loadFileBody - " + loadFileBody);
         checkShouldBeNotEmptyLoadFileBody(loadFileBody);
 
         String userName = getUserName();
@@ -53,7 +59,8 @@ public class FileController {
     @DeleteMapping("file")
     public ResponseEntity<Object> deleteFile(
             @RequestParam(value = "filename") String fileName
-    ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
+    ) throws InvalidDataException, InputParamIsNullException, UserIsNullException {
+        log.debug("checkShouldBeNotEmptyStr: input param - fileName - " + fileName);
         checkShouldBeNotEmptyStr(fileName);
 
         String userName = getUserName();
@@ -67,7 +74,8 @@ public class FileController {
     @GetMapping(path = "file")
     public ResponseEntity<byte[]> downloadFileFromServer(
             @RequestParam(value = "filename") String fileName
-    ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
+    ) throws InvalidDataException, InputParamIsNullException, UserIsNullException {
+        log.debug("checkShouldBeNotEmptyStr: input param - fileName - " + fileName);
         checkShouldBeNotEmptyStr(fileName);
 
         String userName = getUserName();
@@ -83,7 +91,11 @@ public class FileController {
     public ResponseEntity<Object> editFileName(
             @RequestParam(value = "filename") String fileName,
             @RequestBody EditFileNameBody body 
-    ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
+    ) throws InvalidDataException, InputParamIsNullException, UserIsNullException {
+        log.debug("checkShouldBeNotEmptyStr: input param - fileName - " + fileName);
+        checkShouldBeNotEmptyStr(fileName);
+
+        log.debug("checkShouldBeNotEmptyStr: input param - EditFileNameBody - " + body.getFileName());
         checkShouldBeNotEmptyStr(body.getFileName());
 
         String userName = getUserName();
@@ -96,7 +108,9 @@ public class FileController {
     @GetMapping("list")
     public Collection<ListItem> getListFiles(
             @RequestParam Integer limit
-    ) throws InvalidDataException, UnauthorisedException, InternalServerErrorException {
+    ) throws InvalidDataException, UserIsNullException, InputParamIsNullException {
+        log.debug("checkShouldBeNotEmptyNumber: input param - limit - " + limit);
+        checkShouldBeNotEmptyNumber(limit);
 
         String userName = getUserName();
         UserInfo user = userInfoService.getUserByName(userName);
